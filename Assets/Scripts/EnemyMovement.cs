@@ -1,43 +1,32 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.AI;
 
 [RequireComponent(typeof(Enemy))]
 public class EnemyMovement : MonoBehaviour
 {
-    private Transform target;
-    private int wavepointIndex = 0;
+    private Vector3 target;
+
+    private NavMeshAgent navMeshAgent;
 
     private Enemy enemy;
 
     void Start()
     {
+        navMeshAgent = GetComponent<NavMeshAgent>();
         enemy = GetComponent<Enemy>();
-        target = Waypoints.points[0];
+        target = new Vector3(70, transform.position.y, -70);
+        navMeshAgent.SetDestination(target);
     }
     
     void Update()
     {
-        Vector3 dir = target.position - transform.position;
-        transform.Translate(dir.normalized * enemy.speed * Time.deltaTime, Space.World);
-
-        if (Vector3.Distance(transform.position, target.position) <= 0.2f)
+        if (navMeshAgent.pathStatus == NavMeshPathStatus.PathComplete && navMeshAgent.remainingDistance == 0)
         {
-            GetNextWaypoint();
+            EndPath();
         }
 
         enemy.speed = enemy.startSpeed;
-    }
-
-    void GetNextWaypoint()
-    {
-        if (wavepointIndex >= Waypoints.points.Length - 1)
-        {
-            EndPath();
-            return;
-        }
-        
-        wavepointIndex++;
-        target = Waypoints.points[wavepointIndex];
     }
 
     void EndPath()
